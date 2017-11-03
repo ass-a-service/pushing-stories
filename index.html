@@ -120,9 +120,12 @@
             socket.emit('vote', dataString);
           }
 
-          const like = id => {
-            const storyId = id.replace(/^id-/, '');
-            sendDataToServer(storyId);
+          const like = item => {
+            if (item && item.dataset.voted !== 'true') {
+              const storyId = item.id.replace(/^id-/, '');
+              sendDataToServer(storyId);
+              item.dataset.voted = true;
+            }
           }
 
           const printStory = storyString => {
@@ -133,7 +136,10 @@
             storyHtml.id = 'id-'+ story.id;
             storyHtml.dataset.date = story.creation_date;
             storyHtml.className = 'stories__item';
-            storyHtml.innerHTML = `<span class="stories__item__votes">${story.votes}</span><span class="stories__item__story">${story.text}</span><button class="stories__item__button" onclick="like('${story.id}')">LIKE</button>`;
+            storyHtml.addEventListener('click', function() {
+              like(storyHtml);
+            }, false);
+            storyHtml.innerHTML = `<span class="stories__item__votes">${story.votes}</span><span class="stories__item__story">${story.text}</span>`;
             storiesContainer.insertBefore(storyHtml, storiesContainer.firstChild);
           }
 
