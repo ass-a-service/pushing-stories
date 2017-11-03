@@ -2,8 +2,9 @@ const app = require('express')()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tracery = require('tracery-grammar')
+const rules = require('./rules')
 const mongoose = require('mongoose')
-require('./models/Story')
+require('./Story')
 const Story = mongoose.model('Story')
 require('dotenv').config()
 
@@ -13,37 +14,6 @@ mongoose.Promise = global.Promise // Tell Mongoose to use ES6 promises
 mongoose.connection.on('error', err => console.erro(`mongoose connection: ${err.message}`))
 
 // Tracery stuff:
-const rules = {
-  who: ['Sonia', 'Adrián', 'Antonio', 'Georgina', 'Héctor', 'David', 'Chris', 'Nacho', 'Mao', 'Axel', 'Andrés', 'Javi', 'Benja', 'Isabel', 'Aritz', 'Fred', 'Víctor', 'Matt', 'Nico', 'Edu', 'Ana', 'Rodrigo'],
-  what: [
-    'stole bussiness secrets',
-    'broke the code',
-    'forgot a semicolon in core code',
-    'broke the api',
-    'removed the database',
-    'pushed failed code to qa branch',
-    'hide one puzzle piece',
-  ],
-  when: [
-    'during prod',
-    'during summer kickoff',
-    'when everybody was distracted',
-    'when nobody watch',
-    'during the night watch surveilance',
-    'the day of the project launch',
-  ],
-  where: [
-    'test'
-  ],
-  origin: [
-    '#who# #what# #when# #where#',
-    '#who# #what# #where# #when#',
-    '#when# #who# #what# #where#',
-    '#when# #who# #where# #what#',
-    '#who# #what# #where#',
-  ]
-}
-
 const grammar = tracery.createGrammar(rules)
 
 const generateStory = () => {
@@ -94,6 +64,7 @@ setInterval(async () => {
 }, 5 * 1000)
 
 // TODO: once a day query de database to delete all stories created more than 24 h ago and with 0 votes
+// TODO: on weekend don't create new stories, but emit most voted stories from database
 
 // Server listen on port...
 const port = process.env.PORT || 3000
