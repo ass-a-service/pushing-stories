@@ -120,15 +120,28 @@
             socket.emit('vote', dataString);
           }
 
+          const like = id => {
+            const storyId = id.replace(/^id-/, '');
+            sendDataToServer(storyId);
+          }
+
           const printStory = storyString => {
-            console.log(storyString);
+            console.log(`printStory: ${storyString}`);
             const story = JSON.parse(storyString);
             const storiesContainer = document.querySelector('.stories ul');
             const storyHtml = document.createElement('li');
-            storyHtml.id = story.id;
+            storyHtml.id = 'id-'+ story.id;
+            storyHtml.dataset.date = story.creation_date;
             storyHtml.className = 'stories__item';
-            storyHtml.innerText = story.text;
+            storyHtml.innerHTML = `<span class="stories__item__votes">${story.votes}</span><span class="stories__item__story">${story.text}</span><button class="stories__item__button" onclick="like('${story.id}')">LIKE</button>`;
             storiesContainer.insertBefore(storyHtml, storiesContainer.firstChild);
+          }
+
+          const updateStory = storyString => {
+            console.log(`updateStory: ${storyString}`);
+            const story = JSON.parse(storyString);
+            const storyVotes = document.querySelector(`#id-${story.id} .stories__item__votes`);
+            if (storyVotes) storyVotes.innerText = story.votes;
           }
 
           const removeStories = () => {
@@ -138,6 +151,7 @@
           document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#remove-stories').addEventListener('click', removeStories, false);
             socket.on('story', printStory);
+            socket.on('vote', updateStory);
           });
 
           console.log('%cWelcome to Scalefast Stories :) Happy hacking!', 'background-color: #111; color: #fff; padding: 10px; line-height: 50px; font-size: 30px; font-family: arial;');

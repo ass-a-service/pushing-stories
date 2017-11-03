@@ -61,10 +61,16 @@ app.get('/', (req, res) => {
 io.on('connection', socket => {
   console.log('a user has connected')
   socket.on('disconnect', () => console.log('user disconnected'))
-  socket.on('vote', voteString => {
+  socket.on('vote', async voteString => {
     try {
-      const vote = JSON.parse(voteString)
-      // TODO: save vote in database for that story
+      const storyId = JSON.parse(voteString)
+      const story = await Story.findOneAndUpdate(
+        { _id: storyId },
+        { $inc: { votes: 1 }},
+        { new: true }
+      )
+      const updatedStoryString = JSON.stringify({ id: story._id, text: story.text, votes: story.votes, creation_date: story.creation_date })
+      io.emit('vote', updatedStoryString)
     } catch (e) {
       console.log('error on parsing and saving vote')
     }
@@ -75,8 +81,9 @@ io.on('connection', socket => {
 setInterval(async () => {
   const storyText = generateStory()
   try {
-    const story = await new Story({ text: storyText })
-    const storyString = JSON.stringify({ id: story.id, text: story.text, creation_date: story.creation_date })
+    const story = new Story({ text: storyText })
+    await story.save()
+    const storyString = JSON.stringify({ id: story._id, text: story.text, votes: story.votes, creation_date: story.creation_date })
     console.log(`sending story: ${storyString}`)
     io.emit('story', storyString)
   } catch (e) {
