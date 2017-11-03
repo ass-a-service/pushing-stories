@@ -2,7 +2,17 @@ const app = require('express')()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tracery = require('tracery-grammar')
+const mongoose = require('mongoose')
+require('./models/Story')
+const Story = mongoose.model('Story')
+require('dotenv').config()
 
+// Connec to the database:
+mongoose.connect(process.env.DATABASE)
+mongoose.Promise = global.Promise // Tell Mongoose to use ES6 promises
+mongoose.connection.on('error', err => console.erro(`mongoose connection: ${err.message}`))
+
+// Tracery stuff:
 const rules = {
   who: ['Sonia', 'Adrián', 'Antonio', 'Georgina', 'Héctor', 'David', 'Chris', 'Nacho', 'Mao', 'Axel', 'Andrés', 'Javi', 'Benja', 'Isabel', 'Aritz', 'Fred', 'Víctor', 'Matt', 'Nico', 'Edu', 'Ana', 'Rodrigo'],
   what: [
@@ -42,10 +52,12 @@ const generateStory = () => {
   return formattedStory
 }
 
+// Express routes:
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 })
 
+// Socket.io events:
 io.on('connection', socket => {
   console.log('a user has connected')
   socket.on('disconnect', () => console.log('user disconnected'))
@@ -59,16 +71,28 @@ io.on('connection', socket => {
   })
 })
 
-// interval each minute generate, save and emit story:
-//io.emit('story', story)
-setInterval(() => {
+// Generate, save and emit stories:
+setInterval(async () => {
   const storyText = generateStory()
-  // TODO: save on database
-  const storyString = JSON.stringify({ id: 1, text: storyText })
-  console.log(`sending story: ${storyString}`)
-  io.emit('story', storyString)
+  try {
+    const story = await new Story({ text: storyText })
+    const storyString = JSON.stringify({ id: story.id, text: story.text, creation_date: story.creation_date })
+    console.log(`sending story: ${storyString}`)
+    io.emit('story', storyString)
+  } catch (e) {
+    console.log(`error on saving and emiting story: ${e}`)
+  } finally {
+
+  }
 }, 5 * 1000)
 
-http.listen(3000, () => {
-  console.log('listening on *:3000')
+// TODO: once a day query de database to delete all stories created more than 24 h ago and with 0 votes
+
+// Server listen on port...
+const port = process.env.PORT || 3000
+http.listen(port, () => {
+  console.log(`listening on *:${port}`)
 })
+
+// End script
+console.log('End script!')
