@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Scalefast Stories POC</title>
+        <style>
+
+            :root {
+                --top-separator: 150px;
+                --page-background: rgb(240, 240, 240);
+            }
+
+            * {
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                background-color: var(--page-background);
+            }
+
+            .stories__item {
+                list-style: none;
+                padding: 20px;
+                border: 1px solid grey;
+                margin: 15px;
+                box-shadow: 5px 5px 5px grey;
+                background-color: rgba(255,200,100,0.5);
+                font-family: verdana;
+                font-size: 18px;
+            }
+
+            .controls {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 999;
+                background-color: black;
+                color: white;
+                height: var(--top-separator);
+            }
+
+            .controls__container {
+                margin: 20px;
+                text-align: center;
+            }
+
+            .controls__title {
+                margin-bottom: 10px;
+                text-transform: uppercase;
+                font-size: 30px;
+                font-family: verdana;
+            }
+
+            .controls__button {
+                display: inline-block;
+                background-color: white;
+                border: 1px solid grey;
+                width: 200px;
+                height: 50px;
+                vertical-align: middle;
+                text-transform: uppercase;
+                font-weight: bold;
+                font-size: 16px;
+                margin: 5px;
+            }
+
+            .controls__button:hover {
+                color: white;
+                background-color: grey;
+            }
+
+            .controls__button:active {
+                color: black;
+                background-color: white;
+                transform: translateY(4px) translateX(2px);
+            }
+
+            .stories {
+                position: absolute;
+                top: var(--top-separator);
+                left: 0;
+                right: 0;
+                background-color: var(--page-background);
+            }
+
+            @media (max-width: 463px) {
+                :root {
+                    --top-separator: 230px;
+                }
+            }
+
+        </style>
+    </head>
+    <body>
+
+        <div class="app">
+            <div class="controls">
+                <div class="controls__container">
+                    <h1 class="controls__title">Scalefast Stories</h1>
+                    <button id="action-button" class="controls__button" type="button" name="action-button">Generate</button>
+                    <button id="remove-stories" class="controls__button" type="button" name="remove-stories">Clear</button>
+                </div>
+            </div>
+            <div class="stories">
+                <ul>
+
+                </ul>
+            </div>
+        </div>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <script src="tracery.js"></script>
+
+        <script type="text/javascript">
+
+            console.log('%cWelcome to Scalefast Stories, dude!', 'background-color: black; color: yellow; font-size: 30px; font-family: arial; text-transform: uppercase; line-height: 50px; padding: 10px;');
+
+            var rules = {
+                who: ['Antonio', 'Adrián', 'David', 'Ana', 'Axel', 'Andrés', 'Edu', 'Georgina', 'Sonia', 'Benja', 'Jesús'],
+                what: ['broke the code', 'introduced a bug', 'did rm -rf', 'forgot a semicolon', 'forgot a CUtil::debug'],
+                where: ['in prod', 'in preprod', 'in SDM'],
+                when: ['on release date', 'late at night', 'during the night watch night', 'the day of the release', 'back in the day', 'just before the presentation', 'during the kickoff'],
+                origin: ['#who# #what# #where# #when#', '#who# #what# #when# #where#', '#when# #who# #what# #where#']
+            };
+            var stories = [];
+
+            function generateStory(rules) {
+                var grammar = tracery.createGrammar(rules);
+                return grammar.flatten('#origin#');
+            }
+
+            function printStory(story) {
+                story = story.substr(0,1).toUpperCase() + story.substr(1);
+                saveStory(story);
+                $('.stories ul').append('<li class="stories__item">'+ story +'</li>');
+                $(window).scrollTop($('.stories ul li:last-child').offset().top);
+            }
+
+            function saveStory(story) {
+                stories.push(story);
+                localStorage.setItem('stories', JSON.stringify(stories));
+            }
+
+            function loadStories() {
+                storiesString = localStorage.getItem('stories') || '[]';
+                stories = JSON.parse(storiesString);
+                var storiesHtml = '';
+                for (var i=0; i<stories.length; i++) {
+                    storiesHtml += '<li class="stories__item">'+ stories[i] +'</li>';
+                }
+                $('.stories ul').html(storiesHtml);
+            }
+
+            function removeStories() {
+                stories = [];
+                localStorage.clear('stories');
+                $('.stories').html('<ul></ul>');
+            }
+
+            $(document).ready(function() {
+                $('#action-button').on('click', function() {
+                    printStory(generateStory(rules));
+                });
+
+                $('#remove-stories').on('click', removeStories);
+
+                loadStories();
+            });
+
+        </script>
+    </body>
+</html>
