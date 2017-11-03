@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Scalefast Stories POC</title>
+        <title>Scalefast Stories</title>
         <style>
 
             :root {
@@ -111,65 +111,36 @@
             </div>
         </div>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <script src="tracery.js"></script>
-
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
         <script type="text/javascript">
+          var socket = io();
 
-            console.log('%cWelcome to Scalefast Stories, dude!', 'background-color: black; color: yellow; font-size: 30px; font-family: arial; text-transform: uppercase; line-height: 50px; padding: 10px;');
+          const sendDataToServer = (data) => {
+            const dataString = JSON.stringify(data);
+            socket.emit('vote', dataString);
+          }
 
-            var rules = {
-                who: ['Antonio', 'Adrián', 'David', 'Ana', 'Axel', 'Andrés', 'Edu', 'Georgina', 'Sonia', 'Benja', 'Jesús'],
-                what: ['broke the code', 'introduced a bug', 'did rm -rf', 'forgot a semicolon', 'forgot a CUtil::debug'],
-                where: ['in prod', 'in preprod', 'in SDM'],
-                when: ['on release date', 'late at night', 'during the night watch night', 'the day of the release', 'back in the day', 'just before the presentation', 'during the kickoff'],
-                origin: ['#who# #what# #where# #when#', '#who# #what# #when# #where#', '#when# #who# #what# #where#']
-            };
-            var stories = [];
+          const printStory = storyString => {
+            console.log(storyString);
+            const story = JSON.parse(storyString);
+            const storiesContainer = document.querySelector('.stories ul');
+            const storyHtml = document.createElement('li');
+            storyHtml.id = story.id;
+            storyHtml.className = 'stories__item';
+            storyHtml.innerText = story.text;
+            storiesContainer.insertBefore(storyHtml, storiesContainer.firstChild);
+          }
 
-            function generateStory(rules) {
-                var grammar = tracery.createGrammar(rules);
-                return grammar.flatten('#origin#');
-            }
+          const removeStories = () => {
+            document.querySelector('.stories').innerHTML = '<ul></ul>';
+          }
 
-            function printStory(story) {
-                story = story.substr(0,1).toUpperCase() + story.substr(1);
-                saveStory(story);
-                $('.stories ul').append('<li class="stories__item">'+ story +'</li>');
-                $(window).scrollTop($('.stories ul li:last-child').offset().top);
-            }
+          document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('#remove-stories').addEventListener('click', removeStories, false);
+            socket.on('story', printStory);
+          });
 
-            function saveStory(story) {
-                stories.push(story);
-                localStorage.setItem('stories', JSON.stringify(stories));
-            }
-
-            function loadStories() {
-                storiesString = localStorage.getItem('stories') || '[]';
-                stories = JSON.parse(storiesString);
-                var storiesHtml = '';
-                for (var i=0; i<stories.length; i++) {
-                    storiesHtml += '<li class="stories__item">'+ stories[i] +'</li>';
-                }
-                $('.stories ul').html(storiesHtml);
-            }
-
-            function removeStories() {
-                stories = [];
-                localStorage.clear('stories');
-                $('.stories').html('<ul></ul>');
-            }
-
-            $(document).ready(function() {
-                $('#action-button').on('click', function() {
-                    printStory(generateStory(rules));
-                });
-
-                $('#remove-stories').on('click', removeStories);
-
-                loadStories();
-            });
-
+          console.log('%cWelcome to Scalefast Stories :) Happy hacking!', 'background-color: #111; color: #fff; padding: 10px; line-height: 50px; font-size: 30px; font-family: arial;');
         </script>
     </body>
 </html>
