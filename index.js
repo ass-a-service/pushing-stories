@@ -2,11 +2,14 @@ const app = require('express')()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tracery = require('tracery-grammar')
-const rules = require('./rules')
+const rules = require('./rules.json')
 const mongoose = require('mongoose')
 require('./Story')
 const Story = mongoose.model('Story')
 require('dotenv').config()
+
+const storyInterval = process.env.STORY_INTERVAL || 10 // seconds
+const removeDelay = process.env.REMOVE_DELAY || 3 // hours
 
 // Connec to the database:
 mongoose.connect(process.env.DATABASE)
@@ -61,9 +64,16 @@ setInterval(async () => {
   } finally {
 
   }
-}, 5 * 1000)
+}, storyInterval * 1000)
 
-// TODO: once a day query de database to delete all stories created more than 24 h ago and with 0 votes
+// Removes 24h old stories with 0 votes:
+setInterval(async () => {
+  const aDayInThePast = new Date(new Date() - 24 * 60 * 60 * 1000).toISOString()
+  const affected = await Story.count({ $and: [{ creation_date: { $lte: aDayInThePast } }, { votes: 0 }] })
+  console.log(`affected documents on remove older than 24h with 0 votes: ${affected}`)
+  await Story.deleteMany({ $and: [{ creation_date: { $lte: aDayInThePast } }, { votes: 0 }] })
+}, removeDelay * 60 * 60 * 1000)
+
 // TODO: on weekend don't create new stories, but emit most voted stories from database
 
 // Server listen on port...
