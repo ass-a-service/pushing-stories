@@ -14,7 +14,7 @@ const removeDelay = process.env.REMOVE_DELAY || 3 // hours
 // Connec to the database:
 mongoose.connect(process.env.DATABASE)
 mongoose.Promise = global.Promise // Tell Mongoose to use ES6 promises
-mongoose.connection.on('error', err => console.erro(`mongoose connection: ${err.message}`))
+mongoose.connection.on('error', err => console.error(`mongoose connection: ${err.message}`))
 
 // Tracery stuff:
 const grammar = tracery.createGrammar(rules)
