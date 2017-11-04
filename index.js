@@ -42,7 +42,7 @@ io.on('connection', socket => {
         { $inc: { votes: 1 }},
         { new: true }
       )
-      const updatedStoryString = JSON.stringify({ id: story._id, text: story.text, votes: story.votes, creation_date: story.creation_date })
+      const updatedStoryString = JSON.stringify(story)
       io.emit('vote', updatedStoryString)
     } catch (e) {
       console.log('error on parsing and saving vote')
@@ -52,17 +52,25 @@ io.on('connection', socket => {
 
 // Generate, save and emit stories:
 setInterval(async () => {
-  const storyText = generateStory()
-  try {
-    const story = new Story({ text: storyText })
-    await story.save()
-    const storyString = JSON.stringify({ id: story._id, text: story.text, votes: story.votes, creation_date: story.creation_date })
-    console.log(`sending story: ${storyString}`)
-    io.emit('story', storyString)
-  } catch (e) {
-    console.log(`error on saving and emiting story: ${e}`)
-  } finally {
-
+  if (new Date().getDay() === 0) { // if is Sunday, emit the most voted stories
+    try {
+      const mostVotedStories = await Story.find({}, null, { sort: { votes: -1 }, limit: 50 })
+      console.log(`sending most voted stories`)
+      io.emit('most-voted-stories', JSON.stringify(mostVotedStories))
+    } catch (e) {
+      console.log(`error on saving and emiting most voted stories: ${e}`)
+    }
+  } else {
+    const storyText = generateStory()
+    try {
+      const story = new Story({ text: storyText })
+      await story.save()
+      const storyString = JSON.stringify(story)
+      console.log(`sending story: ${storyString}`)
+      io.emit('story', storyString)
+    } catch (e) {
+      console.log(`error on saving and emiting story: ${e}`)
+    }
   }
 }, storyInterval * 1000)
 

@@ -123,6 +123,9 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
         <script type="text/javascript">
           var socket = io();
+          let mostVotedStories;
+          let mostVotedInterval;
+          let pointer = 0;
 
           const sendDataToServer = (data) => {
             const dataString = JSON.stringify(data);
@@ -142,7 +145,7 @@
             const story = JSON.parse(storyString);
             const storiesContainer = document.querySelector('.stories ul');
             const storyHtml = document.createElement('li');
-            storyHtml.id = 'id-'+ story.id;
+            storyHtml.id = 'id-'+ story._id;
             storyHtml.dataset.date = story.creation_date;
             storyHtml.className = 'stories__item';
             storyHtml.addEventListener('click', function() {
@@ -155,18 +158,34 @@
           const updateStory = storyString => {
             console.log(`updateStory: ${storyString}`);
             const story = JSON.parse(storyString);
-            const storyVotes = document.querySelector(`#id-${story.id} .stories__item__votes`);
+            const storyVotes = document.querySelector(`#id-${story._id} .stories__item__votes`);
             if (storyVotes) storyVotes.innerText = story.votes;
           }
 
           const removeStories = () => {
             document.querySelector('.stories').innerHTML = '<ul></ul>';
+            mostVotedStories = [];
+          }
+
+          const mostVotedHandler = storiesArray => {
+            if (Array.isArray(mostVotedStories) && mostVotedStories.length > 0) {
+              console.log('most voted stories data is already set');
+            } else {
+              mostVotedStories = JSON.parse(storiesArray);
+              clearInterval(mostVotedInterval);
+              mostVotedInterval = setInterval(() => {
+                printStory(JSON.stringify(mostVotedStories[pointer]));
+                pointer++;
+                if (pointer >= mostVotedStories.length) pointer = 0;
+              }, 20 * 1000);
+            }
           }
 
           document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#remove-stories').addEventListener('click', removeStories, false);
             socket.on('story', printStory);
             socket.on('vote', updateStory);
+            socket.on('most-voted-stories', mostVotedHandler);
           });
 
           console.log('%cWelcome to Scalefast Stories :) Happy hacking!', 'background-color: #111; color: #fff; padding: 10px; line-height: 50px; font-size: 30px; font-family: arial;');
