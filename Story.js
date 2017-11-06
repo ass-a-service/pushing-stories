@@ -18,4 +18,20 @@ const storySchema = new mongoose.Schema({
   }
 })
 
+storySchema.statics.findOneOrCreate = async function(storyText) {
+  try {
+    const story = await this.findOne({ text: storyText })
+    if (story) {
+      return story
+    } else {
+      const insertedStory = await this.create({ text: storyText })
+      if (insertedStory) return insertedStory
+      return null
+    }
+  } catch (e) {
+    console.log(`something was wrong on findOneOrCreate: ${e}`)
+    return null
+  }
+}
+
 module.exports = mongoose.model('Story', storySchema)
