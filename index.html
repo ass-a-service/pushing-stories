@@ -126,6 +126,7 @@
           let mostVotedStories;
           let mostVotedInterval;
           let pointer = 0;
+          let voteRecord = {};
 
           const sendDataToServer = (data) => {
             const dataString = JSON.stringify(data);
@@ -135,8 +136,40 @@
           const like = item => {
             if (item && item.dataset.voted !== 'true') {
               const storyId = item.id.replace(/^id-/, '');
-              sendDataToServer(storyId);
-              item.dataset.voted = true;
+              if (!votedRecently(storyId, voteRecord)) {
+                sendDataToServer(storyId);
+                item.dataset.voted = true;
+                voteRecord[storyId] = Date.now();
+                saveOnLocalStorage('voted', voteRecord);
+              }
+            }
+          }
+
+          const votedRecently = (id, voteObject) => {
+            if (typeof voteObject[id] === 'undefined') return false;
+            const voteDate = voteObject[id];
+            if (voteDate + 24 * 60 * 60 * 1000 <= Date.now()) return false;
+            console.log(`voted for this story less than 24 hours ago`);
+            return true;
+          }
+
+          const saveOnLocalStorage = (key, data) => {
+            if (typeof data !== 'string') data = JSON.stringify(data);
+            try {
+              localStorage.setItem(key, data)
+            } catch (e) {
+                console.log(`error on saving on local storage`);
+            }
+          }
+
+          const getFromLocalStorage = key => {
+            try {
+              let data = localStorage.getItem(key);
+              data = JSON.parse(data);
+              if (data === null) data = {};
+              return data;
+            } catch (e) {
+              console.log(`error on getting data from local storage`);
             }
           }
 
@@ -183,6 +216,7 @@
 
           document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('#remove-stories').addEventListener('click', removeStories, false);
+            voteRecord = getFromLocalStorage('voted');
             socket.on('story', printStory);
             socket.on('vote', updateStory);
             socket.on('most-voted-stories', mostVotedHandler);

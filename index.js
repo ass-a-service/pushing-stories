@@ -50,7 +50,7 @@ io.on('connection', socket => {
   })
 })
 
-// Generate, save and emit stories:
+// Generate, find or save, emit stories:
 setInterval(async () => {
   if (new Date().getDay() === 0) { // if is Sunday, emit the most voted stories
     try {
@@ -63,13 +63,13 @@ setInterval(async () => {
   } else {
     const storyText = generateStory()
     try {
-      const story = new Story({ text: storyText })
-      await story.save()
+      const story = await Story.findOneOrCreate(storyText)
+      if (!story || !story.text) return
       const storyString = JSON.stringify(story)
       console.log(`sending story: ${storyString}`)
       io.emit('story', storyString)
     } catch (e) {
-      console.log(`error on saving and emiting story: ${e}`)
+      console.log(`error on get and emit story: ${e}`)
     }
   }
 }, storyInterval * 1000)
@@ -81,8 +81,6 @@ setInterval(async () => {
   console.log(`affected documents on remove older than 24h with 0 votes: ${affected}`)
   await Story.deleteMany({ $and: [{ creation_date: { $lte: aDayInThePast } }, { votes: 0 }] })
 }, removeDelay * 60 * 60 * 1000)
-
-// TODO: on weekend don't create new stories, but emit most voted stories from database
 
 // Server listen on port...
 const port = process.env.PORT || 3000
