@@ -18,7 +18,7 @@ const storySchema = new mongoose.Schema({
   }
 })
 
-storySchema.statics.findOneOrCreate = async function(storyText) {
+storySchema.statics.findOneOrCreate = async function (storyText) {
   try {
     const story = await this.findOne({ text: storyText })
     if (story) {

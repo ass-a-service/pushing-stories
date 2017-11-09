@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const app = express()
 const http = require('http').Server(app)
@@ -28,7 +29,7 @@ const generateStory = () => {
 
 // Express routes:
 app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
+  res.sendFile(path.join(__dirname, '/index.html'))
 })
 
 // Socket.io events:
@@ -43,7 +44,7 @@ const voteHandler = async voteString => {
     const story = JSON.parse(voteString)
     const updatedStory = await Story.findOneAndUpdate(
       { _id: story.id },
-      { $inc: { votes: 1 }},
+      { $inc: { votes: 1 } },
       { new: true }
     )
     const updatedStoryString = JSON.stringify({ id: updatedStory._id, text: updatedStory.text, votes: updatedStory.votes })
@@ -74,7 +75,10 @@ setInterval(async () => {
       console.log(`error on saving and emiting most voted stories: ${e}`)
     }
   } else {
-    if (mostVotedStories && mostVotedStories.length) mostVotedStories = [], pointer = 0
+    if (mostVotedStories && mostVotedStories.length) {
+      mostVotedStories = []
+      pointer = 0
+    }
     const storyText = generateStory()
     try {
       const story = await Story.findOneOrCreate(storyText)
@@ -99,4 +103,3 @@ const port = process.env.PORT || 3000
 http.listen(port, () => {
   console.log(`listening on *:${port}`)
 })
-
