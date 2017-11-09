@@ -1,4 +1,5 @@
-const app = require('express')()
+const express = require('express')
+const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http)
 const tracery = require('tracery-grammar')
@@ -34,40 +35,51 @@ app.get('/', (req, res) => {
 io.on('connection', socket => {
   console.log('a user has connected')
   socket.on('disconnect', () => console.log('user disconnected'))
-  socket.on('vote', async voteString => {
-    try {
-      const storyId = JSON.parse(voteString)
-      const story = await Story.findOneAndUpdate(
-        { _id: storyId },
-        { $inc: { votes: 1 }},
-        { new: true }
-      )
-      const updatedStoryString = JSON.stringify(story)
-      io.emit('vote', updatedStoryString)
-    } catch (e) {
-      console.log('error on parsing and saving vote')
-    }
-  })
+  socket.on('vote', voteHandler)
 })
+
+const voteHandler = async voteString => {
+  try {
+    const story = JSON.parse(voteString)
+    const updatedStory = await Story.findOneAndUpdate(
+      { _id: story.id },
+      { $inc: { votes: 1 }},
+      { new: true }
+    )
+    const updatedStoryString = JSON.stringify({ id: updatedStory._id, text: updatedStory.text, votes: updatedStory.votes })
+    io.emit('vote', updatedStoryString)
+  } catch (e) {
+    console.log(`Error on parsing and saving vote: ${e}`)
+  }
+}
+
+let mostVotedStories = []
+let pointer = 0
+
+const sendStory = (story) => {
+  const storyString = JSON.stringify({ id: story._id, text: story.text, votes: story.votes })
+  console.log(`sending story: ${storyString}`)
+  io.emit('story', storyString)
+}
 
 // Generate, find or save, emit stories:
 setInterval(async () => {
   if (new Date().getDay() === 0) { // if is Sunday, emit the most voted stories
     try {
-      const mostVotedStories = await Story.find({}, null, { sort: { votes: -1 }, limit: 50 })
-      console.log(`sending most voted stories`)
-      io.emit('most-voted-stories', JSON.stringify(mostVotedStories))
+      if (mostVotedStories && !mostVotedStories.length) mostVotedStories = await Story.find({}, null, { sort: { votes: -1 }, limit: 50 })
+      sendStory(mostVotedStories[pointer])
+      pointer++
+      if (pointer >= mostVotedStories.length) pointer = 0
     } catch (e) {
       console.log(`error on saving and emiting most voted stories: ${e}`)
     }
   } else {
+    if (mostVotedStories && mostVotedStories.length) mostVotedStories = [], pointer = 0
     const storyText = generateStory()
     try {
       const story = await Story.findOneOrCreate(storyText)
       if (!story || !story.text) return
-      const storyString = JSON.stringify(story)
-      console.log(`sending story: ${storyString}`)
-      io.emit('story', storyString)
+      sendStory(story)
     } catch (e) {
       console.log(`error on get and emit story: ${e}`)
     }
@@ -88,5 +100,3 @@ http.listen(port, () => {
   console.log(`listening on *:${port}`)
 })
 
-// End script
-console.log('End script!')
