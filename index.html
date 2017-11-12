@@ -150,7 +150,22 @@
 
       // Binding socket events to actions:
       socket.on('vote', storyString => updateStory(JSON.parse(storyString)))
-      socket.on('story', storyString => addStory(JSON.parse(storyString)))
+      socket.on('story', storyString => {
+        const story = JSON.parse(storyString)
+        tellStory(story)
+        addStory(story)
+      })
+
+      // Speech web api stuff to tell stories:
+      const tellStory = story => {
+        try {
+          const utterance = new SpeechSynthesisUtterance(`${story.text}, with ${story.votes} votes`)
+          utterance.lang = 'en-US'
+          window.speechSynthesis.speak(utterance)
+        } catch (e) {
+          console.log(`There is some problem with speech web api: ${e}`)
+        }
+      }
 
     </script>
   </body>
