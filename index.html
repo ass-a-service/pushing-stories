@@ -118,8 +118,15 @@
 
       const actions = {
         clearStories: state => ({ stories: [] }),
-        voteStory: state => story => story.voted ? console.log(`you have already voted for story '${story.text}'`) : socket.emit('vote', JSON.stringify(story)),
-        updateStory: state => updatedStory => ({ stories: state.stories.map(oldStory => oldStory.id === updatedStory.id ? { id: updatedStory.id, text: updatedStory.text, votes: updatedStory.votes, voted: true } : oldStory ) }),
+        voteStory: state => story => {
+          if (story.voted) {
+            console.log(`you have already voted for story '${story.text}'`)
+          } else {
+            socket.emit('vote', JSON.stringify(story))
+            return { stories: state.stories.map(oldStory => oldStory.id === story.id ? { id: story.id, text: story.text, votes: story.votes, voted: true } : oldStory)}
+          }
+        },
+        updateStory: state => updatedStory => ({ stories: state.stories.map(oldStory => oldStory.id === updatedStory.id ? { id: updatedStory.id, text: updatedStory.text, votes: updatedStory.votes, voted: oldStory.voted ? true : false } : oldStory ) }),
         addStory: state => story => ({ stories: [story, ...state.stories] })
       }
 
