@@ -21,29 +21,60 @@
     "Nico",
     "Edu",
     "Ana",
-    "Rodrigo"
+    "Rodrigo",
+    "Adrián Mateo",
+    "Alejandro",
+    "Andrés Castro",
+    "David Aracil",
+    "Paul"
   ],
   "what": [
-    "stole bussiness secrets",
+    "stole business secrets",
     "broke the code",
     "forgot a semicolon in core code",
     "broke the api",
     "removed the database",
     "pushed failed code to qa branch",
-    "hide one puzzle piece"
+    "hide one puzzle piece",
+    "ordered pizza like it was the end of the world",
+    "cried when looking at Haxe code",
+    "put an //OK comment",
+    "forgot to follow PSR-2",
+    "made Black magic with polyfills",
+    "forgot a file_put_contents in CRestServer",
+    "understood that in Scalefast GET is SET and viceversa",
+    "met a junkie shitting in the street",
+    "punched the screen while debugging ips.js",
+    "understood the concept of Flash ID"
   ],
   "when": [
     "during prod",
     "during summer kickoff",
     "when everybody was distracted",
-    "when nobody watch",
+    "when nobody was watching",
     "during the night watch surveilance",
-    "the day of the project launch"
+    "the day of the project launch",
+    "during lunch time",
+    "one day before Black Friday",
+    "when the CTO was afk",
+    "while QA was doing all non-regression tests",
+    "while playing ping-pong",
+    "just after Victor screamed while playing pool",
+    "when the power of the office went down"
+  ],
+  "why" : [
+    "because of reasons",
+    "because non-regression tests are only for the weak",
+    "because Spiderman said so five years ago",
+    "because Batman was going to murder us all",
+    "because [] == 0 in javascript",
+    "because yes"
   ],
   "origin": [
     "#who# #what# #when#",
     "#who# #what# #when#",
     "#when# #who# #what#",
-    "#who# #what#"
+    "#who# #what#",
+    "#who# #what# #why#"
   ]
 }
