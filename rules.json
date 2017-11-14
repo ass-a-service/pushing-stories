@@ -35,7 +35,7 @@
     "broke the api",
     "removed the database",
     "pushed failed code to qa branch",
-    "hide one puzzle piece",
+    "hid one puzzle piece",
     "ordered pizza like it was the end of the world",
     "cried when looking at Haxe code",
     "put an //OK comment",
@@ -45,7 +45,15 @@
     "understood that in Scalefast GET is SET and viceversa",
     "met a junkie shitting in the street",
     "punched the screen while debugging ips.js",
-    "understood the concept of Flash ID"
+    "understood the concept of Flash ID",
+    "learned how to quit vim",
+    "shouted :q! on Skype",
+    "was free beered",
+    "shouted vagrant halt on R&D",
+    "complained about Skype",
+    "did a git push origin --force",
+    "derped derp",
+    "went to the Chino, never to come back"
   ],
   "when": [
     "during prod",
@@ -60,6 +68,8 @@
     "while QA was doing all non-regression tests",
     "while playing ping-pong",
     "just after Victor screamed while playing pool",
+    "five minutes before prod",
+    "when running like crazy to the bathroom",
     "when the power of the office went down"
   ],
   "why" : [
@@ -67,7 +77,6 @@
     "because non-regression tests are only for the weak",
     "because Spiderman said so five years ago",
     "because Batman was going to murder us all",
-    "because [] == 0 in javascript",
     "because yes"
   ],
   "origin": [
@@ -75,6 +84,7 @@
     "#who# #what# #when#",
     "#when# #who# #what#",
     "#who# #what#",
-    "#who# #what# #why#"
+    "#who# #what# #why#",
+    "As #who# predicted #when#, #who# #what#"
   ]
 }
